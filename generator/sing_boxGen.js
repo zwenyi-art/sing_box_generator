@@ -88,7 +88,7 @@ const config = {
       tag: "auto",
       outbounds: [],
       url: "https://www.gstatic.com/generate_204",
-      interval: "1m0s",
+      interval: "15m0s",
       tolerance: 50,
     },
 
