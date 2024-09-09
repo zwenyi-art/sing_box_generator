@@ -158,7 +158,8 @@ const { processLargeFile } = require("../generator/bigFileReader");
 const dataScraper = require("../generator/fileScraper");
 
 const sing_boxGen = async (req, res) => {
-  const url = "https://pad.riseup.net/p/9cjN4e-8-dlnAmfHii2v/export/txt";
+  const url =
+    "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/channels/protocols/shadowsocks";
   const data = await dataScraper(url);
   await processLargeFile(data, config)
     .then((data) => res.status(200).json(data))
