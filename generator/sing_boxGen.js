@@ -89,7 +89,7 @@ const config = {
       type: "urltest",
       outbounds: ["sghe3"],
       url: "https://www.gstatic.com/generate_204",
-      interval: "1m",
+      interval: "15m",
       tolerance: 50,
     },
     {
@@ -111,41 +111,6 @@ const config = {
       tag: "Twitter",
       type: "selector",
       outbounds: ["sghe3"],
-    },
-    {
-      tag: "Facebook",
-      type: "selector",
-      outbounds: ["sghe3"],
-    },
-    {
-      tag: "Amazon",
-      type: "selector",
-      outbounds: ["direct", "sghe3"],
-    },
-    {
-      tag: "Apple",
-      type: "selector",
-      outbounds: ["direct", "sghe3"],
-    },
-    {
-      tag: "Microsoft",
-      type: "selector",
-      outbounds: ["direct", "sghe3"],
-    },
-    {
-      tag: "Game",
-      type: "selector",
-      outbounds: ["direct", "sghe3"],
-    },
-    {
-      tag: "Bilibili",
-      type: "selector",
-      outbounds: ["direct"],
-    },
-    {
-      tag: "MediaVideo",
-      type: "selector",
-      outbounds: ["direct", "sghe3"],
     },
     {
       tag: "!cn",
