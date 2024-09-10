@@ -1,6 +1,5 @@
 const config = {
   log: {
-    disabled: false,
     level: "info",
     timestamp: true,
   },
@@ -27,28 +26,28 @@ const config = {
         server: "localDns",
       },
       {
-        geosite: ["category-ads-all"],
+        geosite: "category-ads-all",
         server: "block",
       },
       {
-        server: "localDns",
         outbound: "any",
+        server: "localDns",
         disable_cache: true,
       },
       {
-        geosite: ["cn"],
+        geosite: "cn",
         server: "localDns",
       },
       {
-        server: "localDns",
         clash_mode: "direct",
+        server: "localDns",
       },
       {
-        server: "proxyDns",
         clash_mode: "global",
+        server: "proxyDns",
       },
       {
-        geosite: ["geolocation-!cn"],
+        geosite: "geolocation-!cn",
         server: "proxyDns",
       },
     ],
@@ -56,19 +55,18 @@ const config = {
   },
   inbounds: [
     {
-      sniff: true,
       type: "mixed",
       listen: "127.0.0.1",
       listen_port: 1081,
+      sniff: true,
     },
     {
-      stack: "system",
-      auto_route: true,
-      inet4_address: "172.19.0.1/30",
-      mtu: 9000,
-      sniff: true,
-      strict_route: true,
       type: "tun",
+      mtu: 9000,
+      inet4_address: "172.19.0.1/30",
+      auto_route: true,
+      strict_route: true,
+      stack: "system",
       platform: {
         http_proxy: {
           enabled: true,
@@ -76,53 +74,44 @@ const config = {
           server_port: 1081,
         },
       },
+      sniff: true,
     },
   ],
   outbounds: [
     {
-      tag: "select",
       type: "selector",
+      tag: "select",
       outbounds: ["auto", "sghe3"],
     },
     {
-      tag: "auto",
       type: "urltest",
+      tag: "auto",
       outbounds: ["sghe3"],
       url: "https://www.gstatic.com/generate_204",
-      interval: "15m15s",
+      interval: "20m0s",
       tolerance: 50,
+    },
+    {
+      type: "direct",
+      tag: "direct",
+    },
+    {
+      type: "block",
+      tag: "block",
+    },
+    {
+      type: "dns",
+      tag: "dns-out",
+    },
+    {
+      type: "selector",
+      tag: "AdBlock",
+      outbounds: ["block", "direct"],
     },
     {
       tag: "🌌 Google",
       type: "selector",
       outbounds: ["sghe3"],
-    },
-    {
-      tag: "🌏 !cn",
-      type: "selector",
-      outbounds: ["direct", "sghe3"],
-    },
-    {
-      tag: "🌏 cn",
-      type: "selector",
-      outbounds: ["direct", "select"],
-    },
-    {
-      tag: "🛑 AdBlock",
-      type: "selector",
-      outbounds: ["block", "direct"],
-    },
-    {
-      tag: "direct",
-      type: "direct",
-    },
-    {
-      tag: "block",
-      type: "block",
-    },
-    {
-      tag: "dns-out",
-      type: "dns",
     },
     {
       server: "103.253.24.216",
@@ -167,39 +156,17 @@ const config = {
         outbound: "select",
       },
       {
-        domain: ["v2rayse.com", "cfmem.com", "vpnse.org", "cff.pw", "tt.vg"],
-        outbound: "select",
-      },
-      {
-        domain: [
-          "clash.razord.top",
-          "yacd.metacubex.one",
-          "yacd.haishan.me",
-          "d.metacubex.one",
-        ],
-        outbound: "direct",
-      },
-      {
         geosite: ["google", "github"],
         geoip: ["google"],
         outbound: "🌌 Google",
       },
       {
-        geosite: ["geolocation-!cn"],
-        outbound: "🌏 !cn",
-      },
-      {
-        geosite: ["cn"],
-        geoip: ["private", "cn"],
-        outbound: "🌏 cn",
-      },
-      {
-        geosite: ["category-ads-all"],
-        outbound: "🛑 AdBlock",
+        geosite: "category-ads-all",
+        outbound: "AdBlock",
       },
     ],
-    auto_detect_interface: true,
     final: "select",
+    auto_detect_interface: true,
   },
   experimental: {
     cache_file: {
