@@ -89,13 +89,63 @@ const config = {
       type: "urltest",
       outbounds: ["sghe3"],
       url: "https://www.gstatic.com/generate_204",
-      interval: "10m",
+      interval: "1m",
       tolerance: 50,
+    },
+    {
+      tag: "OpenAI",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
     },
     {
       tag: "Google",
       type: "selector",
       outbounds: ["sghe3"],
+    },
+    {
+      tag: "Telegram",
+      type: "selector",
+      outbounds: ["sghe3"],
+    },
+    {
+      tag: "Twitter",
+      type: "selector",
+      outbounds: ["sghe3"],
+    },
+    {
+      tag: "Facebook",
+      type: "selector",
+      outbounds: ["sghe3"],
+    },
+    {
+      tag: "Amazon",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "Apple",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "Microsoft",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "Game",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "Bilibili",
+      type: "selector",
+      outbounds: ["direct"],
+    },
+    {
+      tag: "MediaVideo",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
     },
     {
       tag: "!cn",
@@ -180,9 +230,53 @@ const config = {
         outbound: "direct",
       },
       {
+        geosite: ["openai"],
+        outbound: "OpenAI",
+      },
+      {
         geosite: ["google", "github"],
         geoip: ["google"],
         outbound: "Google",
+      },
+      {
+        geosite: ["telegram"],
+        geoip: ["telegram"],
+        outbound: "Telegram",
+      },
+      {
+        geosite: ["twitter"],
+        geoip: ["twitter"],
+        outbound: "Twitter",
+      },
+      {
+        geosite: ["facebook", "instagram"],
+        geoip: ["facebook"],
+        outbound: "Facebook",
+      },
+      {
+        geosite: ["amazon"],
+        outbound: "Amazon",
+      },
+      {
+        geosite: ["apple-cn", "apple"],
+        outbound: "Apple",
+      },
+      {
+        geosite: ["microsoft"],
+        outbound: "Microsoft",
+      },
+      {
+        geosite: ["category-games"],
+        outbound: "Game",
+      },
+      {
+        geosite: ["bilibili"],
+        outbound: "Bilibili",
+      },
+      {
+        geosite: ["tiktok", "netflix", "hbo", "disney", "primevideo"],
+        geoip: ["netflix"],
+        outbound: "MediaVideo",
       },
       {
         geosite: ["geolocation-!cn"],
