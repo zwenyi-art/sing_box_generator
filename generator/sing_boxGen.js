@@ -1,5 +1,6 @@
 const config = {
   log: {
+    disabled: false,
     level: "info",
     timestamp: true,
   },
@@ -26,28 +27,28 @@ const config = {
         server: "localDns",
       },
       {
-        geosite: "category-ads-all",
+        geosite: ["category-ads-all"],
         server: "block",
       },
       {
-        outbound: "any",
         server: "localDns",
+        outbound: "any",
         disable_cache: true,
       },
       {
-        geosite: "cn",
+        geosite: ["cn"],
         server: "localDns",
       },
       {
+        server: "localDns",
         clash_mode: "direct",
-        server: "localDns",
       },
       {
-        clash_mode: "global",
         server: "proxyDns",
+        clash_mode: "global",
       },
       {
-        geosite: "geolocation-!cn",
+        geosite: ["geolocation-!cn"],
         server: "proxyDns",
       },
     ],
@@ -55,18 +56,19 @@ const config = {
   },
   inbounds: [
     {
+      sniff: true,
       type: "mixed",
       listen: "127.0.0.1",
       listen_port: 1081,
-      sniff: true,
     },
     {
-      type: "tun",
-      mtu: 9000,
-      inet4_address: "172.19.0.1/30",
-      auto_route: true,
-      strict_route: true,
       stack: "system",
+      auto_route: true,
+      inet4_address: "172.19.0.1/30",
+      mtu: 9000,
+      sniff: true,
+      strict_route: true,
+      type: "tun",
       platform: {
         http_proxy: {
           enabled: true,
@@ -74,40 +76,65 @@ const config = {
           server_port: 1081,
         },
       },
-      sniff: true,
     },
   ],
   outbounds: [
     {
-      type: "selector",
       tag: "select",
-      outbounds: ["auto"],
+      type: "selector",
+      outbounds: ["auto", "sghe3"],
     },
     {
-      type: "urltest",
       tag: "auto",
-      outbounds: [],
+      type: "urltest",
+      outbounds: ["sghe3"],
       url: "https://www.gstatic.com/generate_204",
-      interval: "15m0s",
+      interval: "10m",
       tolerance: 50,
     },
-
     {
-      type: "direct",
-      tag: "direct",
-    },
-    {
-      type: "block",
-      tag: "block",
-    },
-    {
-      type: "dns",
-      tag: "dns-out",
-    },
-    {
+      tag: "Google",
       type: "selector",
+      outbounds: ["sghe3"],
+    },
+    {
+      tag: "!cn",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "cn",
+      type: "selector",
+      outbounds: ["direct", "select"],
+    },
+    {
       tag: "AdBlock",
+      type: "selector",
       outbounds: ["block", "direct"],
+    },
+    {
+      tag: "direct",
+      type: "direct",
+    },
+    {
+      tag: "block",
+      type: "block",
+    },
+    {
+      tag: "dns-out",
+      type: "dns",
+    },
+    {
+      server: "103.253.24.216",
+      server_port: 443,
+      tls: {
+        enabled: true,
+        server_name: "104.17.113.30",
+        insecure: true,
+      },
+      password: "f116cd20-6541-11ef-8c6f-1239d0255272",
+      tag: "sghe3",
+      type: "trojan",
     },
   ],
   route: {
@@ -140,12 +167,39 @@ const config = {
         outbound: "select",
       },
       {
-        geosite: "category-ads-all",
+        domain: ["v2rayse.com", "cfmem.com", "vpnse.org", "cff.pw", "tt.vg"],
+        outbound: "select",
+      },
+      {
+        domain: [
+          "clash.razord.top",
+          "yacd.metacubex.one",
+          "yacd.haishan.me",
+          "d.metacubex.one",
+        ],
+        outbound: "direct",
+      },
+      {
+        geosite: ["google", "github"],
+        geoip: ["google"],
+        outbound: "Google",
+      },
+      {
+        geosite: ["geolocation-!cn"],
+        outbound: "!cn",
+      },
+      {
+        geosite: ["cn"],
+        geoip: ["private", "cn"],
+        outbound: "cn",
+      },
+      {
+        geosite: ["category-ads-all"],
         outbound: "AdBlock",
       },
     ],
-    final: "select",
     auto_detect_interface: true,
+    final: "select",
   },
   experimental: {
     cache_file: {
@@ -154,6 +208,7 @@ const config = {
     },
   },
 };
+
 const { processLargeFile } = require("../generator/bigFileReader");
 const dataScraper = require("../generator/fileScraper");
 
