@@ -82,7 +82,7 @@ const config = {
     {
       tag: "select",
       type: "selector",
-      outbounds: ["auto"],
+      outbounds: ["auto", "sghe3"],
     },
     {
       tag: "auto",
