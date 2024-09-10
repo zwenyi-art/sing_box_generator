@@ -113,6 +113,36 @@ const config = {
       outbounds: ["sghe3"],
     },
     {
+      tag: "Amazon",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "Apple",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "Microsoft",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "Game",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
+      tag: "Bilibili",
+      type: "selector",
+      outbounds: ["direct"],
+    },
+    {
+      tag: "MediaVideo",
+      type: "selector",
+      outbounds: ["direct", "sghe3"],
+    },
+    {
       tag: "!cn",
       type: "selector",
       outbounds: ["direct", "sghe3"],
@@ -212,11 +242,6 @@ const config = {
         geosite: ["twitter"],
         geoip: ["twitter"],
         outbound: "Twitter",
-      },
-      {
-        geosite: ["facebook", "instagram"],
-        geoip: ["facebook"],
-        outbound: "Facebook",
       },
       {
         geosite: ["amazon"],
