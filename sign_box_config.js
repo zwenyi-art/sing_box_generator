@@ -1,4 +1,4 @@
-const config = {
+const sign_box_config = {
   log: {
     level: "info",
     timestamp: true,
@@ -81,16 +81,17 @@ const config = {
     {
       type: "selector",
       tag: "select",
-      outbounds: ["auto", "sghe3"],
+      outbounds: ["auto"],
     },
     {
       type: "urltest",
       tag: "auto",
-      outbounds: ["sghe3"],
+      outbounds: [],
       url: "https://www.gstatic.com/generate_204",
-      interval: "20m0s",
+      interval: "5m0s",
       tolerance: 50,
     },
+
     {
       type: "direct",
       tag: "direct",
@@ -107,23 +108,6 @@ const config = {
       type: "selector",
       tag: "AdBlock",
       outbounds: ["block", "direct"],
-    },
-    {
-      tag: "🌌 Google",
-      type: "selector",
-      outbounds: ["sghe3"],
-    },
-    {
-      server: "103.253.24.216",
-      server_port: 443,
-      tls: {
-        enabled: true,
-        server_name: "104.17.113.30",
-        insecure: true,
-      },
-      password: "f116cd20-6541-11ef-8c6f-1239d0255272",
-      tag: "sghe3",
-      type: "trojan",
     },
   ],
   route: {
@@ -156,11 +140,6 @@ const config = {
         outbound: "select",
       },
       {
-        geosite: ["google", "github"],
-        geoip: ["google"],
-        outbound: "🌌 Google",
-      },
-      {
         geosite: "category-ads-all",
         outbound: "AdBlock",
       },
@@ -175,17 +154,4 @@ const config = {
     },
   },
 };
-
-const { processLargeFile } = require("../generator/bigFileReader");
-const dataScraper = require("../generator/fileScraper");
-
-const sing_boxGen = async (req, res) => {
-  const url =
-    "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/channels/protocols/shadowsocks";
-  const data = await dataScraper(url);
-  await processLargeFile(data, config)
-    .then((data) => res.status(200).json(data))
-    .catch(console.error);
-};
-
-module.exports = sing_boxGen;
+module.exports = sign_box_config;

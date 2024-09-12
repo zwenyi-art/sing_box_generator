@@ -1,10 +1,11 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
-const sing_boxGen = require("./generator/sing_boxGen");
+const servers_gen = require("./generator/serversGen");
+const connectDB = require("./db/connect");
+const { getServers } = require("./controllers/methods");
+
 const app = express();
-const geoip = path.resolve(__dirname, "./file/geoip.db");
-const geosite = path.resolve(__dirname, "./file/geosite.db");
 
 const testConfig = {
   log: {
@@ -216,8 +217,14 @@ const testConfig = {
     },
   },
 };
+
 app.use(cors());
-app.get("/api/v1", sing_boxGen);
+app.get("/api/v1/testing", servers_gen);
+app.get("/api/v1/25", async (req, res) => {
+  const result = await getServers("public_servers");
+  console.log(result);
+  res.status(200).json(result);
+});
 // app.get("/test", (req, res) => {
 //   res.status(200).json(testConfig);
 // });
@@ -237,6 +244,15 @@ app.get("/api/v1", sing_boxGen);
 //     }
 //   });
 // });
-app.listen(8080, () => {
-  console.log("listening on port 8080");
-});
+
+const start = async () => {
+  try {
+    await connectDB(process.env.SS_SERVERS_DB_URL);
+    app.listen(8080, () => {
+      console.log("listening on port 8080");
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+start();
