@@ -248,7 +248,7 @@ app.get("/api/v1/25", async (req, res) => {
 const start = async () => {
   try {
     await connectDB(process.env.SS_SERVERS_DB_URL);
-    app.listen(8080, () => {
+    app.listen(process.env.PORT, () => {
       console.log("listening on port 8080");
     });
   } catch (error) {
