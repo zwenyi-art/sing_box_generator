@@ -181,23 +181,17 @@ const { processLargeFile } = require("./bigFileReader");
 const dataScraper = require("./fileScraper");
 const { Public_servers, SSH } = require("../models/Tasks");
 
-const updatePublicServer = async (data, type) => {
+const updatePublicServer = async (data) => {
   const updateData = `{
-        tag: ${type},
+        tag:"public_servers",
       },
       { servers: ${data} },
       {
         new: true,
         runValidators: true,
       }`;
-  if (type === "public_servers") {
-    const server = await Public_servers.findOneAndUpdate(updateData);
-    console.log(server);
-  } else if (type === "private_servers") {
-    const server = await Private_servers.findOneAndUpdate(updateData);
-    console.log(server);
-  }
-  return;
+  const server = await Public_servers.findOneAndUpdate(updateData);
+  console.log(server);
 };
 const servers_Gen = async (req, res) => {
   const { type: serverType } = req.query;
@@ -210,8 +204,7 @@ const servers_Gen = async (req, res) => {
   try {
     //stage 1
     sendSSE({ flag: "scraping", message: "Scraping data from the URL..." });
-    const url =
-      "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/channels/protocols/shadowsocks";
+    const url = "https://pad.riseup.net/p/9cjN4e-8-dlnAmfHii2v/export/txt";
     const data = await dataScraper(url);
     //stage 2
     sendSSE({ flag: "processing", message: "Processing the scraped data..." });
@@ -225,7 +218,7 @@ const servers_Gen = async (req, res) => {
     });
     // await addServers(checkedServers, "public_servers");
     // await addServers(checkedServers, serverType);
-    await updatePublicServer(checkedServers, serverType);
+    await updatePublicServer(checkedServers);
     //final stage
     sendSSE({ flag: "done", message: "Process completed successfully!" });
     res.end();
