@@ -194,7 +194,8 @@ const updatePublicServer = async (data) => {
   console.log(server);
 };
 const servers_Gen = async () => {
-  const url = "https://pad.riseup.net/p/9cjN4e-8-dlnAmfHii2v/export/txt";
+  const url =
+    "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/channels/protocols/shadowsocks";
   try {
     //stage 1
     const data = await dataScraper(url);
