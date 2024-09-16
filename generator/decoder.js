@@ -55,12 +55,10 @@ const shadowSockLink = async (url) => {
     "xchacha20",
   ];
   const result = {
-    type: "shadowsocks",
     method: method,
     password: password,
-    server: host,
-    server_port: Number(port),
-    tag: String(generateId()),
+    host: host,
+    port: Number(port),
   };
   if (host === "127.0.0.1") {
     return;

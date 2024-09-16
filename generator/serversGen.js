@@ -175,17 +175,64 @@ const config = {
     },
   },
 };
-
+const { checkMultipleSS_Servers } = require("./checkssServer");
+const usableServers = [];
 const { processLargeFile } = require("./bigFileReader");
 const dataScraper = require("./fileScraper");
+const { Public_servers, SSH } = require("../models/Tasks");
 
+const updatePublicServer = async (data, type) => {
+  const updateData = `{
+        tag: ${type},
+      },
+      { servers: ${data} },
+      {
+        new: true,
+        runValidators: true,
+      }`;
+  if (type === "public_servers") {
+    const server = await Public_servers.findOneAndUpdate(updateData);
+    console.log(server);
+  } else if (type === "private_servers") {
+    const server = await Private_servers.findOneAndUpdate(updateData);
+    console.log(server);
+  }
+  return;
+};
 const servers_Gen = async (req, res) => {
-  const url =
-    "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/channels/protocols/shadowsocks";
-  const data = await dataScraper(url);
-  await processLargeFile(data, config)
-    .then((data) => res.status(200).json(data))
-    .catch(console.error);
+  const { type: serverType } = req.query;
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  const sendSSE = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+  try {
+    //stage 1
+    sendSSE({ flag: "scraping", message: "Scraping data from the URL..." });
+    const url =
+      "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/channels/protocols/shadowsocks";
+    const data = await dataScraper(url);
+    //stage 2
+    sendSSE({ flag: "processing", message: "Processing the scraped data..." });
+    const servers = await processLargeFile(data).catch(console.error);
+    //stage 3
+    sendSSE({ flag: "checking", message: "Checking multiple SS servers..." });
+    const checkedServers = await checkMultipleSS_Servers(servers);
+    sendSSE({
+      flag: "adding",
+      message: "Adding checked servers to the database...",
+    });
+    // await addServers(checkedServers, "public_servers");
+    // await addServers(checkedServers, serverType);
+    await updatePublicServer(checkedServers, serverType);
+    //final stage
+    sendSSE({ flag: "done", message: "Process completed successfully!" });
+    res.end();
+  } catch (error) {
+    sendSSE({ flag: "error", message: `Error occurred: ${error.message}` });
+    res.end();
+  }
 };
 
-module.exports = servers_Gen;
+module.exports = { servers_Gen };

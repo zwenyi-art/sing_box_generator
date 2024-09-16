@@ -1,9 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const servers_gen = require("./generator/serversGen");
+const sign_box_config = require("./sign_box_config");
+const { servers_Gen } = require("./generator/serversGen");
 const connectDB = require("./db/connect");
-const { getServers } = require("./controllers/methods");
+const { getRandomServers, addServers } = require("./controllers/methods");
 
 const app = express();
 
@@ -217,14 +218,18 @@ const testConfig = {
     },
   },
 };
-
+const singBoxClear = () => {
+  console.log("singbox clear");
+  // if (sign_box_config.outbounds[0].outbounds.length > 2) {
+  //   sign_box_config.outbounds[0].outbounds.splice(1);
+  // }
+  // console.log(sign_box_config.outbounds[0].outbounds);
+};
+app.use(express.json());
 app.use(cors());
-app.get("/api/v1/testing", servers_gen);
-app.get("/api/v1/25", async (req, res) => {
-  const result = await getServers("public_servers");
-  console.log(result);
-  res.status(200).json(result);
-});
+app.get("/api/v1/publicserverUpdate", servers_Gen);
+app.post("/api/v1/serverAdd", addServers);
+app.get("/api/v1/random", getRandomServers, singBoxClear);
 // app.get("/test", (req, res) => {
 //   res.status(200).json(testConfig);
 // });
@@ -247,7 +252,7 @@ app.get("/api/v1/25", async (req, res) => {
 
 const start = async () => {
   try {
-    await connectDB(process.env.SS_SERVERS_DB_URL);
+    await connectDB(process.env.ALL_SERVERS_DB_URL);
     app.listen(process.env.PORT, () => {
       console.log("listening on port 8080");
     });
