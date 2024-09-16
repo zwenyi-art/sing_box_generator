@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const sign_box_config = require("./sign_box_config");
-const { servers_Gen } = require("./generator/serversGen");
+const { autoUpdateServers } = require("./generator/serversGen");
 const connectDB = require("./db/connect");
 const { getRandomServers, addServers } = require("./controllers/methods");
 
@@ -218,37 +218,14 @@ const testConfig = {
     },
   },
 };
-const singBoxClear = () => {
-  console.log("singbox clear");
-  // if (sign_box_config.outbounds[0].outbounds.length > 2) {
-  //   sign_box_config.outbounds[0].outbounds.splice(1);
-  // }
-  // console.log(sign_box_config.outbounds[0].outbounds);
-};
+
+//automatic update public server with base64 every 24 hours
+autoUpdateServers();
+
 app.use(express.json());
 app.use(cors());
-app.get("/api/v1/publicserverUpdate", servers_Gen);
 app.post("/api/v1/serverAdd", addServers);
-app.get("/api/v1/random", getRandomServers, singBoxClear);
-// app.get("/test", (req, res) => {
-//   res.status(200).json(testConfig);
-// });
-// app.get("/download/geoip", (req, res) => {
-//   res.download(geoip, "geoip.db", (err) => {
-//     if (err) {
-//       console.error("Error sending file:", err);
-//       res.status(500).send("Error downloading file");
-//     }
-//   });
-// });
-// app.get("/download/geosite", (req, res) => {
-//   res.download(geosite, "geosite.db", (err) => {
-//     if (err) {
-//       console.error("Error sending file:", err);
-//       res.status(500).send("Error downloading file");
-//     }
-//   });
-// });
+app.get("/api/v1/random", getRandomServers);
 
 const start = async () => {
   try {

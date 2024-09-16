@@ -193,39 +193,32 @@ const updatePublicServer = async (data) => {
   const server = await Public_servers.findOneAndUpdate(updateData);
   console.log(server);
 };
-const servers_Gen = async (req, res) => {
-  const { type: serverType } = req.query;
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  const sendSSE = (data) => {
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
-  };
+const servers_Gen = async () => {
+  const url = "https://pad.riseup.net/p/9cjN4e-8-dlnAmfHii2v/export/txt";
   try {
     //stage 1
-    sendSSE({ flag: "scraping", message: "Scraping data from the URL..." });
-    const url = "https://pad.riseup.net/p/9cjN4e-8-dlnAmfHii2v/export/txt";
     const data = await dataScraper(url);
     //stage 2
-    sendSSE({ flag: "processing", message: "Processing the scraped data..." });
+    console.log("data scraping");
     const servers = await processLargeFile(data).catch(console.error);
     //stage 3
-    sendSSE({ flag: "checking", message: "Checking multiple SS servers..." });
+    console.log("checking");
     const checkedServers = await checkMultipleSS_Servers(servers);
-    sendSSE({
-      flag: "adding",
-      message: "Adding checked servers to the database...",
-    });
     // await addServers(checkedServers, "public_servers");
     // await addServers(checkedServers, serverType);
     await updatePublicServer(checkedServers);
     //final stage
-    sendSSE({ flag: "done", message: "Process completed successfully!" });
-    res.end();
+    console.log("completed updating public severs");
   } catch (error) {
-    sendSSE({ flag: "error", message: `Error occurred: ${error.message}` });
-    res.end();
+    console.log(error);
   }
 };
+const interval = 24 * 60 * 60 * 1000;
+const autoUpdateServers = async () => {
+  // Your function logic here
+  await servers_Gen();
+};
 
-module.exports = { servers_Gen };
+// Start the interval for the test (runs every 2 minutes)
+setInterval(autoUpdateServers, interval);
+module.exports = { autoUpdateServers };
