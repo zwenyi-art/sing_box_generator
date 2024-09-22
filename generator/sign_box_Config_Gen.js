@@ -8,142 +8,191 @@ const sign_box_config = {
   dns: {
     servers: [
       {
-        tag: "proxyDns",
-        address: "8.8.8.8",
+        tag: "proxy_dns",
+        address: "https://8.8.8.8/dns-query",
         detour: "select",
       },
       {
-        tag: "localDns",
-        address: "https://223.5.5.5/dns-query",
+        tag: "local_dns",
+        address: "h3://223.5.5.5/dns-query",
         detour: "direct",
       },
       {
-        tag: "block",
-        address: "rcode://success",
+        tag: "reject",
+        address: "rcode://refused",
+      },
+      {
+        tag: "fake_ip",
+        address: "fakeip",
       },
     ],
     rules: [
       {
-        domain: ["ghproxy.com", "cdn.jsdelivr.net", "testingcf.jsdelivr.net"],
-        server: "localDns",
-      },
-      {
-        geosite: "category-ads-all",
-        server: "block",
-      },
-      {
         outbound: "any",
-        server: "localDns",
+        server: "local_dns",
         disable_cache: true,
       },
       {
-        geosite: "cn",
-        server: "localDns",
+        clash_mode: "Global",
+        server: "proxy_dns",
       },
       {
-        clash_mode: "direct",
-        server: "localDns",
+        clash_mode: "Direct",
+        server: "local_dns",
       },
       {
-        clash_mode: "global",
-        server: "proxyDns",
+        rule_set: "geosite-cn",
+        server: "local_dns",
       },
       {
-        geosite: "geolocation-!cn",
-        server: "proxyDns",
+        rule_set: "geosite-geolocation-!cn",
+        server: "proxy_dns",
+      },
+      {
+        query_type: ["A", "AAAA"],
+        rule_set: "geosite-geolocation-!cn",
+        server: "fake_ip",
       },
     ],
-    strategy: "ipv4_only",
+    final: "proxy_dns",
+    fakeip: {
+      enabled: true,
+      inet4_range: "198.18.0.0/15",
+      inet6_range: "fc00::/18",
+    },
+    independent_cache: true,
+  },
+  ntp: {
+    enabled: true,
+    interval: "30m0s",
+    server: "time.apple.com",
+    server_port: 123,
+    detour: "direct",
   },
   inbounds: [
     {
-      type: "mixed",
-      listen: "127.0.0.1",
-      listen_port: 1081,
-      sniff: true,
-    },
-    {
       type: "tun",
       mtu: 9000,
-      inet4_address: "172.19.0.1/30",
+      inet4_address: "172.16.0.1/30",
+      inet6_address: "2001:470:f9da:fdfa::1/64",
       auto_route: true,
       strict_route: true,
-      stack: "system",
-      platform: {
-        http_proxy: {
-          enabled: true,
-          server: "127.0.0.1",
-          server_port: 1081,
-        },
-      },
+      endpoint_independent_nat: true,
       sniff: true,
+      sniff_override_destination: true,
+      domain_strategy: "prefer_ipv4",
     },
   ],
   outbounds: [
     {
       type: "selector",
       tag: "select",
-      outbounds: ["auto"],
+      outbounds: ["url-test", "vmess-ws-tls"],
+      default: "url-test",
     },
     {
       type: "urltest",
-      tag: "auto",
-      outbounds: [],
+      tag: "url-test",
+      outbounds: ["vmess-ws-tls"],
       url: "https://www.gstatic.com/generate_204",
-      interval: "5m0s",
+      interval: "3m0s",
       tolerance: 50,
     },
-
     {
       type: "direct",
       tag: "direct",
     },
     {
       type: "block",
-      tag: "block",
+      tag: "reject",
     },
     {
       type: "dns",
-      tag: "dns-out",
+      tag: "dns_out",
     },
     {
       type: "selector",
       tag: "AdBlock",
-      outbounds: ["block", "direct"],
+      outbounds: ["reject", "direct"],
     },
   ],
   route: {
     geoip: {
       download_url:
-        "https://github.com/soffchen/sing-geoip/releases/latest/download/geoip.db",
-      download_detour: "select",
+        "https://codeberg.org/axisghost/newGeoDB/raw/branch/main/geoip.db",
+      download_detour: "direct",
     },
     geosite: {
       download_url:
-        "https://github.com/soffchen/sing-geosite/releases/latest/download/geosite.db",
-      download_detour: "select",
+        "https://codeberg.org/axisghost/newGeoDB/raw/branch/main/geosite.db",
+      download_detour: "direct",
     },
     rules: [
       {
-        protocol: "dns",
-        outbound: "dns-out",
-      },
-      {
-        network: "udp",
-        port: 443,
-        outbound: "block",
-      },
-      {
-        clash_mode: "direct",
-        outbound: "direct",
-      },
-      {
-        clash_mode: "global",
+        clash_mode: "Global",
         outbound: "select",
       },
       {
-        geosite: "category-ads-all",
+        clash_mode: "Direct",
+        outbound: "direct",
+      },
+      {
+        protocol: "dns",
+        outbound: "dns_out",
+      },
+      {
+        rule_set: "geosite-category-ads-all",
         outbound: "AdBlock",
+      },
+      {
+        rule_set: "geoip-cn",
+        outbound: "direct",
+      },
+      {
+        rule_set: "geosite-cn",
+        outbound: "direct",
+      },
+      {
+        ip_is_private: true,
+        outbound: "direct",
+      },
+      {
+        rule_set: "geosite-geolocation-!cn",
+        outbound: "select",
+      },
+    ],
+    rule_set: [
+      {
+        type: "remote",
+        tag: "geoip-cn",
+        format: "binary",
+        url: "https://codeberg.org/axisghost/newGeoDB/raw/branch/main/geoip-cn.srs",
+        download_detour: "direct",
+        update_interval: "24h0m0s",
+      },
+      {
+        type: "remote",
+        tag: "geosite-cn",
+        format: "binary",
+        url: "https://codeberg.org/axisghost/newGeoDB/raw/branch/main/geosite-cn.srs",
+        download_detour: "direct",
+        update_interval: "24h0m0s",
+      },
+      {
+        type: "remote",
+        tag: "geosite-geolocation-!cn",
+        format: "binary",
+        url: "https://codeberg.org/axisghost/newGeoDB/raw/branch/main/geolocation-%21cn.srs",
+        download_detour: "direct",
+        update_interval: "24h0m0s",
+      },
+      {
+        type: "remote",
+        tag: "geosite-category-ads-all",
+        format: "binary",
+        url: "https://codeberg.org/axisghost/newGeoDB/raw/branch/main/geosite-category-ads-all.srs",
+        download_detour: "direct",
+        update_interval: "24h0m0s",
       },
     ],
     final: "select",
@@ -153,6 +202,9 @@ const sign_box_config = {
     cache_file: {
       enabled: true,
       path: "cache.db",
+    },
+    clash_api: {
+      external_controller: "127.0.0.1:9090",
     },
   },
 };
@@ -257,6 +309,44 @@ const sign_box_config_gen = async (servers) => {
       sign_box_config.outbounds[0].outbounds.push(tag);
       sign_box_config.outbounds[1].outbounds.push(tag);
       // console.log({ tag, type, server, server_port, user, password });
+    } else if (data.type === "vmess") {
+      const {
+        type,
+        server,
+        tag,
+        server_port,
+        uuid,
+        security,
+        alter_id,
+        transport,
+        tls,
+      } = data;
+      if (transport.type) {
+        sign_box_config.outbounds.push({
+          type,
+          server,
+          tag,
+          server_port,
+          uuid,
+          security,
+          alter_id,
+          transport,
+          tls,
+        });
+      } else {
+        sign_box_config.outbounds.push({
+          type,
+          server,
+          tag,
+          server_port,
+          uuid,
+          security,
+          alter_id,
+        });
+      }
+
+      sign_box_config.outbounds[0].outbounds.push(tag);
+      sign_box_config.outbounds[1].outbounds.push(tag);
     }
   }
 

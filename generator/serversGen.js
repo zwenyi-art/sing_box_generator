@@ -176,7 +176,6 @@ const config = {
   },
 };
 const { checkMultipleSS_Servers } = require("./checkssServer");
-const usableServers = [];
 const { processLargeFile } = require("./bigFileReader");
 const dataScraper = require("./fileScraper");
 const { Public_servers, SSH } = require("../models/Tasks");
@@ -194,8 +193,7 @@ const updatePublicServer = async (data) => {
   console.log(server);
 };
 const servers_Gen = async () => {
-  const url =
-    "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/channels/protocols/shadowsocks";
+  const url = "https://pad.riseup.net/p/9cjN4e-8-dlnAmfHii2v/export/txt";
   try {
     //stage 1
     const data = await dataScraper(url);

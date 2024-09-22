@@ -1,4 +1,4 @@
-const { Public_servers, SSH, SS } = require("../models/Tasks");
+const { Public_servers, SSH, SS, VMESS } = require("../models/Tasks");
 const {
   getRandomElements,
   sign_box_config_gen,
@@ -25,43 +25,110 @@ const getRandomServers = async (req, res, next) => {
   const serverData = [...ssh, ...ss, ...randomServers];
   const public_config = await sign_box_config_gen(serverData);
   res.status(200).json(public_config);
-  next();
 };
 
 const getServers = async (req, res) => {
-  return;
+  const { id } = req.params;
+  const { token } = req.query;
+  if (id === "123" && token === "abc") {
+    const ssh = await SSH.find({});
+    const ss = await SS.find({});
+    const vmess = await VMESS.find({});
+    const servers = [...vmess, ...ssh, ...ss];
+    const public_config = await sign_box_config_gen(servers);
+    res.status(200).json(public_config);
+    // next();
+  } else {
+    res.status(404).send("Hello,ကောင်ဆိုးလေး");
+  }
 };
 
+// const msg_response = (res) => {
+//   res.setHeader("Content-Type", "text/event-stream");
+//   res.setHeader("Cache-Control", "no-cache");
+//   res.setHeader("Connection", "keep-alive");
+//   res.status(200).json({ status: "success" });
+// };
 const addServers = async (req, res) => {
   const { type } = req.body;
   console.log("server hitted", type);
-  if (type === "shadowsocks") {
-    const { server, tag, server_port, method, password } = req.body;
-    await SS.create({
-      type,
-      server,
-      tag,
-      server_port,
-      method,
-      password,
-    });
-    console.log(req.body);
-  } else if (type === "ssh") {
-    const { server, tag, server_port, user, password } = req.body;
-    await SSH.create({
-      type,
-      server,
-      tag,
-      server_port,
-      user,
-      password,
-    });
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.status(200).json({ status: "success" });
+  try {
+    if (type === "shadowsocks") {
+      const { server, tag, server_port, method, password } = req.body;
+      await SS.create({
+        type,
+        server,
+        tag,
+        server_port,
+        method,
+        password,
+      });
+      console.log(req.body);
+    } else if (type === "ssh") {
+      const { server, tag, server_port, user, password } = req.body;
+      await SSH.create({
+        type,
+        server,
+        tag,
+        server_port,
+        user,
+        password,
+      });
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+    } else if (type === "vmess") {
+      const {
+        server,
+        tag,
+        server_port,
+        uuid,
+        security,
+        alter_id,
+        transport,
+        tls,
+      } = req.body;
+      if (Object.keys(transport).length !== 0) {
+        console.log("Hee,transport layer found");
+        console.log(
+          transport.type,
+          transport.path,
+          transport.headers,
+          transport.headers.host
+        );
+        const data = await VMESS.create({
+          type,
+          server,
+          tag,
+          server_port,
+          uuid,
+          security,
+          alter_id,
+          tls,
+          transport: {
+            type: transport.type,
+            path: transport.path,
+            headers: transport.headers,
+          },
+        });
+        res.status(200).json({ success: "true", data });
+      } else {
+        const data = await VMESS.create({
+          type,
+          server,
+          tag,
+          server_port,
+          uuid,
+          security,
+          alter_id,
+          tls,
+        });
+        res.status(200).json({ success: "true", data });
+      }
+    }
+  } catch (error) {
+    res.status(404).json({ success: "false", error: error });
   }
-  res.status(200).json({ status: "success" });
 };
 
-module.exports = { getRandomServers, addServers };
+module.exports = { getRandomServers, addServers, getServers };
